@@ -104,17 +104,19 @@ export async function createBookAction(prevState: any, formData: FormData) {
   }
 
   const { title, content, userId } = validatedFields.data;
+  let bookId = null;
 
   try {
-    const bookId = await addBook(title, content, userId);
+    bookId = await addBook(title, content, userId);
 
     if (!bookId) {
       return { message: "Failed to create book in database." };
     }
-
-    revalidatePath("/dashboard");
-    redirect(`/reader/${bookId}`);
   } catch (e) {
     return { message: "An unexpected error occurred." };
   }
+
+  // Redirect must be called outside of the try/catch block
+  revalidatePath("/dashboard");
+  redirect(`/reader/${bookId}`);
 }
