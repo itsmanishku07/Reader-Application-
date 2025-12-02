@@ -31,7 +31,7 @@ export const addBook = async (
       currentPage: 0,
       settings: {
         fontSize: 16,
-        theme: "light",
+        theme: "indigo",
         animation: "slide",
       },
     });

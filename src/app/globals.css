@@ -109,9 +109,7 @@ body {
     --ring: 262 52% 50%;
   }
 
-  .indigo {
-    /* This is the default theme */
-  }
+  /* The .indigo class is not needed as it's the default root theme */
 }
 
 @layer base {

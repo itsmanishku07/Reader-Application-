@@ -40,7 +40,7 @@ export function ReaderView({ initialBook }: ReaderViewProps) {
     // Recalculate when font size changes
     const observer = new MutationObserver(handleResize);
     if (pageContentRef.current) {
-        observer.observe(pageContentRef.current, { attributes: true, childList: true, subtree: true });
+        observer.observe(pageContentRef.current, { attributes: true, attributeFilter: ['style'], subtree: false });
     }
 
     return () => {
@@ -52,9 +52,8 @@ export function ReaderView({ initialBook }: ReaderViewProps) {
   useEffect(() => {
     const root = window.document.documentElement;
     root.classList.remove('light', 'dark', 'sepia', 'indigo');
-    if (book.settings.theme === 'indigo') {
-        root.classList.add('light'); 
-    } else {
+    // The 'indigo' theme is the default and doesn't need a class
+    if (book.settings.theme !== 'indigo') {
         root.classList.add(book.settings.theme);
     }
   }, [book.settings.theme]);
@@ -118,22 +117,23 @@ export function ReaderView({ initialBook }: ReaderViewProps) {
                 {Array.from({length: totalPages}).map((_, i) => (
                     <div
                         key={i}
-                        className={`flex-shrink-0 w-full h-full relative ${!isSlide ? `absolute inset-0 ${animationClass}` : ''}`}
+                        className={`flex-shrink-0 w-full h-full p-8 md:p-12 relative ${!isSlide ? `absolute inset-0 ${animationClass}` : ''}`}
                         style={{
                             opacity: !isSlide && i === currentPage ? 1 : (isSlide ? 1 : 0),
                             pointerEvents: i === currentPage ? 'auto' : 'none',
                         }}
+                        aria-hidden={i !== currentPage}
                     >
                          <div 
-                            className="h-full text-justify p-8 md:p-12"
+                            className="h-full text-justify"
                             style={{
                                 fontSize: `${book.settings.fontSize}px`,
                                 lineHeight: 1.7,
-                                columnWidth: contentRef.current?.clientWidth,
+                                columnWidth: contentRef.current?.clientWidth ? `${contentRef.current.clientWidth}px` : '100%',
                                 columnGap: '4rem',
-                                transform: `translateX(-${i * (contentRef.current?.clientWidth || 0)}px)`,
+                                transform: `translateX(-${i * 100}%)`,
                             }}
-                            ref={i === 0 ? pageContentRef : null} // Ref only on the first for calculation
+                            ref={i === 0 ? pageContentRef : null} 
                          >
                             {book.content}
                          </div>
