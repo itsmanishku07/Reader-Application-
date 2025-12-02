@@ -37,11 +37,14 @@ export function ReaderView({ initialBook }: ReaderViewProps) {
   }, [currentPage]);
   
   useEffect(() => {
-    const timer = setTimeout(calculatePages, 150); // Increased delay for fonts
+    // A small delay to allow fonts and layout to settle before calculating pages.
+    const timer = setTimeout(calculatePages, 150);
     
+    // Recalculate pages on window resize.
     const handleResize = () => calculatePages();
     window.addEventListener("resize", handleResize);
     
+    // Use a MutationObserver to recalculate when content changes (like font size).
     const observer = new MutationObserver(handleResize);
     if (contentRef.current) {
         observer.observe(contentRef.current, { childList: true, subtree: true, characterData: true });
@@ -54,13 +57,16 @@ export function ReaderView({ initialBook }: ReaderViewProps) {
     }
   }, [calculatePages, book.settings.fontSize, book.settings.theme]);
 
+  // Apply the selected theme to the root element.
   useEffect(() => {
     const root = window.document.documentElement;
     root.classList.remove('light', 'dark', 'sepia', 'indigo');
     if (book.settings.theme !== 'indigo') {
         root.classList.add(book.settings.theme);
     }
-  }, [book.settings.theme]);
+     // Recalculate pages after theme change in case it affects layout
+    calculatePages();
+  }, [book.settings.theme, calculatePages]);
 
   const debouncedUpdateBook = useDebouncedCallback(async (page, settings) => {
     await updateBook(book.id, { currentPage: page, settings });
@@ -115,30 +121,24 @@ export function ReaderView({ initialBook }: ReaderViewProps) {
 
         <div className="h-full w-full max-w-5xl overflow-hidden" ref={viewportRef}>
           <div
-            className={cn("h-full w-full relative", !isFade && animationClass)}
+            className={cn("h-full w-full", animationClass)}
             style={{
-              transform: isFade ? 'none' : `translateX(-${currentPage * 100}%)`,
+              transform: `translateX(-${currentPage * 100}%)`,
+              opacity: isFade && currentPage === currentPage ? 1 : (isFade ? 0 : 1),
             }}
           >
             <div
-              className="absolute inset-0 h-full w-auto"
+              className="h-full"
               style={{
                 columnWidth: viewportRef.current?.clientWidth,
-                columnGap: '6rem', // This creates the space between pages
+                columnGap: '6rem', // Creates space between pages
+                width: `${totalPages * 100}%`,
                 fontSize: `${book.settings.fontSize}px`,
                 lineHeight: 1.7,
               }}
               ref={contentRef}
             >
-              <div className={cn(
-                "p-8 md:p-12 text-justify h-full",
-                 isFade && animationClass
-               )}
-               style={{
-                 opacity: isFade ? 1 : undefined,
-                 animationDelay: isFade ? `${currentPage * 300}ms` : undefined
-               }}
-              >
+              <div className="p-8 md:p-12 text-justify h-full">
                 {book.content}
               </div>
             </div>
