@@ -4,18 +4,19 @@ import {
   signOut as firebaseSignOut,
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
+  User
 } from "firebase/auth";
 import { auth } from "./config";
 
 const provider = new GoogleAuthProvider();
 
-export const signInWithGoogle = async () => {
+export const signInWithGoogle = async (): Promise<{ user: User | null; error: any }> => {
   try {
     const result = await signInWithPopup(auth, provider);
-    return result.user;
+    return { user: result.user, error: null };
   } catch (error) {
     console.error("Error signing in with Google: ", error);
-    return null;
+    return { user: null, error };
   }
 };
 

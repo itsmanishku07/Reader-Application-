@@ -41,9 +41,12 @@ export default function LoginPage() {
   const [state, dispatch] = useActionState(signInAction, initialState);
 
   const handleSignInWithGoogle = async () => {
-    const user = await signInWithGoogle();
+    const { user, error } = await signInWithGoogle();
     if (user) {
       router.push("/dashboard");
+    } else if (error) {
+      // You can handle Google sign-in errors here if needed
+      console.error(error);
     }
   };
 
@@ -53,13 +56,16 @@ export default function LoginPage() {
     }
   }, [user, loading, router]);
   
-  if(loading || user) {
+  if(loading) {
       return (
         <div className="flex items-center justify-center min-h-screen">
           <p>Loading...</p>
         </div>
       )
   }
+  
+  if(user) return null;
+
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-secondary/50">
