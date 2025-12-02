@@ -5,14 +5,14 @@ import { getFirestore } from "firebase/firestore";
 // It's recommended to store this in environment variables
 // For this example, we'll keep it here for simplicity
 const firebaseConfig = {
-  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY || "your-api-key",
-  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN || "your-auth-domain",
-  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || "your-project-id",
-  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET || "your-storage-bucket",
-  messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID || "your-messaging-sender-id",
-  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID || "your-app-id",
+  apiKey: "AIzaSyC2IJqfR0ChvNMJX3g0Y58QsKZtSIGyRns",
+  authDomain: "noteapp-4af21.firebaseapp.com",
+  projectId: "noteapp-4af21",
+  storageBucket: "noteapp-4af21.firebasestorage.app",
+  messagingSenderId: "1034829923148",
+  appId: "1:1034829923148:web:2abf5cef9867cc5230c5e9",
+  measurementId: "G-EZ2WR9DJTQ"
 };
-
 
 // Initialize Firebase
 const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
