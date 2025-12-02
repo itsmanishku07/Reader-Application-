@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Settings, Minus, Plus, Sun, Moon, Book, Paintbrush } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { BookSettings } from "@/lib/types";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 
 type ReaderControlsProps = {
   settings: BookSettings;
@@ -83,11 +84,21 @@ export function ReaderControls({
           {/* Animation Style */}
            <div className="grid gap-3">
              <Label>Page Transition</Label>
-             <div className="grid grid-cols-2 gap-2">
-                <Button variant={settings.animation === 'slide' ? 'secondary' : 'outline'} onClick={() => onSettingsChange({ animation: 'slide' })}>Slide</Button>
-                <Button variant={settings.animation === 'fade' ? 'secondary' : 'outline'} onClick={() => onSettingsChange({ animation: 'fade' })}>Fade</Button>
-             </div>
-          </div>
+              <RadioGroup 
+                value={settings.animation} 
+                onValueChange={(value: BookSettings['animation']) => onSettingsChange({ animation: value })}
+                className="flex gap-4"
+              >
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="slide" id="slide" />
+                  <Label htmlFor="slide">Slide</Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="fade" id="fade" />
+                  <Label htmlFor="fade">Fade</Label>
+                </div>
+              </RadioGroup>
+           </div>
         </div>
       </SheetContent>
     </Sheet>

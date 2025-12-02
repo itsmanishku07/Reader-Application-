@@ -18,29 +18,41 @@ export function ReaderView({ initialBook }: ReaderViewProps) {
   const [currentPage, setCurrentPage] = useState(initialBook.currentPage);
   const [totalPages, setTotalPages] = useState(1);
   const contentRef = useRef<HTMLDivElement>(null);
+  const pageContentRef = useRef<HTMLDivElement>(null);
 
   const calculatePages = useCallback(() => {
-    if (contentRef.current) {
-      const { scrollWidth, clientWidth } = contentRef.current;
-      const pages = clientWidth > 0 ? Math.ceil(scrollWidth / clientWidth) : 1;
+    if (pageContentRef.current && contentRef.current) {
+      const contentWidth = pageContentRef.current.scrollWidth;
+      const viewportWidth = contentRef.current.clientWidth;
+      const pages = viewportWidth > 0 ? Math.ceil(contentWidth / viewportWidth) : 1;
       setTotalPages(pages);
       if (currentPage >= pages) {
-        setCurrentPage(pages - 1);
+        setCurrentPage(Math.max(0, pages - 1));
       }
     }
   }, [currentPage]);
   
   useEffect(() => {
     calculatePages();
-    window.addEventListener("resize", calculatePages);
-    return () => window.removeEventListener("resize", calculatePages);
+    const handleResize = () => calculatePages();
+    window.addEventListener("resize", handleResize);
+    
+    // Recalculate when font size changes
+    const observer = new MutationObserver(handleResize);
+    if (pageContentRef.current) {
+        observer.observe(pageContentRef.current, { attributes: true, childList: true, subtree: true });
+    }
+
+    return () => {
+        window.removeEventListener("resize", handleResize);
+        observer.disconnect();
+    }
   }, [calculatePages, book.settings.fontSize]);
 
   useEffect(() => {
     const root = window.document.documentElement;
     root.classList.remove('light', 'dark', 'sepia', 'indigo');
     if (book.settings.theme === 'indigo') {
-        // Indigo uses the default theme colors
         root.classList.add('light'); 
     } else {
         root.classList.add(book.settings.theme);
@@ -67,7 +79,8 @@ export function ReaderView({ initialBook }: ReaderViewProps) {
     setCurrentPage(newPage);
   };
   
-  const animationClass = book.settings.animation === 'fade' ? 'transition-opacity duration-500' : 'transition-transform duration-500 ease-in-out';
+  const animationClass = book.settings.animation === 'fade' ? 'transition-opacity duration-300' : 'transition-transform duration-300 ease-in-out';
+  const isSlide = book.settings.animation === 'slide';
 
   return (
     <div className="h-screen w-screen flex flex-col bg-background text-foreground">
@@ -97,37 +110,33 @@ export function ReaderView({ initialBook }: ReaderViewProps) {
 
         <div className="h-full w-full max-w-4xl overflow-hidden" ref={contentRef}>
             <div 
-                className={`h-full w-full ${animationClass}`}
+                className={`h-full w-full flex ${isSlide ? animationClass : ''}`}
                 style={{ 
-                    transform: book.settings.animation === 'slide' ? `translateX(-${currentPage * 100}%)` : 'none',
-                    opacity: book.settings.animation === 'fade' && totalPages > 0 ? 1 : undefined,
+                    transform: isSlide ? `translateX(-${currentPage * 100}%)` : 'none',
                  }}
             >
-                <div
-                    className="h-full text-justify p-8 md:p-12"
-                    style={{
-                        fontSize: `${book.settings.fontSize}px`,
-                        columnWidth: contentRef.current?.clientWidth,
-                        columnGap: '4rem',
-                        lineHeight: 1.7,
-                        opacity: book.settings.animation === 'fade' ? 0 : 1,
-                    }}
-                >
-                    {/* This div is for sliding */}
-                    {book.content}
-                </div>
-                {book.settings.animation === 'fade' && Array.from({length: totalPages}).map((_, i) => (
+                {Array.from({length: totalPages}).map((_, i) => (
                     <div
                         key={i}
-                        className={`absolute inset-0 h-full text-justify p-8 md:p-12 ${animationClass}`}
+                        className={`flex-shrink-0 w-full h-full relative ${!isSlide ? `absolute inset-0 ${animationClass}` : ''}`}
                         style={{
-                            fontSize: `${book.settings.fontSize}px`,
-                            lineHeight: 1.7,
-                            opacity: i === currentPage ? 1 : 0,
+                            opacity: !isSlide && i === currentPage ? 1 : (isSlide ? 1 : 0),
                             pointerEvents: i === currentPage ? 'auto' : 'none',
                         }}
                     >
-                         <div style={{ transform: `translateX(-${i * 100}%)`, columnWidth: contentRef.current?.clientWidth, columnGap: '4rem' }}>{book.content}</div>
+                         <div 
+                            className="h-full text-justify p-8 md:p-12"
+                            style={{
+                                fontSize: `${book.settings.fontSize}px`,
+                                lineHeight: 1.7,
+                                columnWidth: contentRef.current?.clientWidth,
+                                columnGap: '4rem',
+                                transform: `translateX(-${i * (contentRef.current?.clientWidth || 0)}px)`,
+                            }}
+                            ref={i === 0 ? pageContentRef : null} // Ref only on the first for calculation
+                         >
+                            {book.content}
+                         </div>
                     </div>
                 ))}
             </div>
