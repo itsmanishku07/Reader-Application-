@@ -33,6 +33,7 @@ export const addBook = async (
         fontSize: 16,
         theme: "indigo",
         animation: "slide",
+        fontFamily: "serif",
       },
     });
     return docRef.id;
@@ -75,6 +76,7 @@ export const getBook = async (id: string): Promise<Book | null> => {
         fontSize: settings.fontSize || 16,
         theme: settings.theme || "indigo",
         animation: settings.animation || "slide",
+        fontFamily: settings.fontFamily || "serif",
       },
     } as Book;
   } else {

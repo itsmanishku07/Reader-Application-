@@ -10,6 +10,9 @@ export default {
   theme: {
     extend: {
       fontFamily: {
+        serif: ['Literata', 'serif'],
+        sans: ['Inter', 'sans-serif'],
+        mono: ['Roboto Mono', 'monospace'],
         body: ['Literata', 'serif'],
         headline: ['Literata', 'serif'],
         code: ['monospace'],

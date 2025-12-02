@@ -2,6 +2,7 @@ export interface BookSettings {
   fontSize: number;
   theme: 'light' | 'dark' | 'sepia' | 'indigo';
   animation: 'slide' | 'fade';
+  fontFamily: 'serif' | 'sans' | 'mono';
 }
 
 export interface Book {

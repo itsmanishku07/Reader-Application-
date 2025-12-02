@@ -8,7 +8,7 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
-import { Settings, Minus, Plus, Sun, Moon, Book, Paintbrush } from "lucide-react";
+import { Settings, Minus, Plus, Sun, Moon, Book, Paintbrush, Type } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { BookSettings } from "@/lib/types";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
@@ -29,6 +29,10 @@ export function ReaderControls({
     const handleThemeChange = (theme: BookSettings['theme']) => {
         onSettingsChange({ theme });
     }
+    
+    const handleFontChange = (font: BookSettings['fontFamily']) => {
+        onSettingsChange({ fontFamily: font });
+    }
 
   return (
     <Sheet>
@@ -42,6 +46,17 @@ export function ReaderControls({
           <SheetTitle className="font-headline">Display Settings</SheetTitle>
         </SheetHeader>
         <div className="grid gap-6 py-6">
+          
+          {/* Font Family */}
+          <div className="grid gap-3">
+             <Label>Font</Label>
+             <div className="grid grid-cols-3 gap-2">
+                <Button variant={settings.fontFamily === 'serif' ? 'secondary' : 'outline'} onClick={() => handleFontChange('serif')} className="font-serif"><Type className="mr-2 h-4 w-4" /> Serif</Button>
+                <Button variant={settings.fontFamily === 'sans' ? 'secondary' : 'outline'} onClick={() => handleFontChange('sans')} className="font-sans"><Type className="mr-2 h-4 w-4" /> Sans</Button>
+                <Button variant={settings.fontFamily === 'mono' ? 'secondary' : 'outline'} onClick={() => handleFontChange('mono')} className="font-mono"><Type className="mr-2 h-4 w-4" /> Mono</Button>
+             </div>
+          </div>
+
           {/* Font Size */}
           <div className="grid gap-3">
             <Label htmlFor="font-size">Font Size</Label>

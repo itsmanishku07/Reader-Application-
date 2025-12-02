@@ -22,7 +22,18 @@ export function ReaderView({ initialBook }: ReaderViewProps) {
   const [isTransitioning, setIsTransitioning] = useState(false);
   
   const viewportRef = useRef<HTMLDivElement>(null);
-  const measurerRef = useRef<HTMLDivElement>(null);
+
+  const getFontFamilyClass = (fontFamily: Book['settings']['fontFamily']) => {
+    switch (fontFamily) {
+      case 'sans':
+        return 'font-sans';
+      case 'mono':
+        return 'font-mono';
+      case 'serif':
+      default:
+        return 'font-serif';
+    }
+  };
 
   const paginateContent = useCallback(() => {
     if (!viewportRef.current || !book.content) {
@@ -33,9 +44,8 @@ export function ReaderView({ initialBook }: ReaderViewProps) {
     const viewport = viewportRef.current;
     const { width, height } = viewport.getBoundingClientRect();
     
-    // Estimator element
     const estimator = document.createElement('div');
-    estimator.style.fontFamily = getComputedStyle(viewport).fontFamily;
+    estimator.style.fontFamily = getComputedStyle(document.documentElement).getPropertyValue('--font-' + book.settings.fontFamily);
     estimator.style.fontSize = `${book.settings.fontSize}px`;
     estimator.style.lineHeight = "1.7";
     estimator.style.textAlign = 'justify';
@@ -72,7 +82,7 @@ export function ReaderView({ initialBook }: ReaderViewProps) {
     }
     setIsPaginating(false);
 
-  }, [book.content, book.settings.fontSize]);
+  }, [book.content, book.settings.fontSize, book.settings.fontFamily, currentPage]);
 
   useEffect(() => {
     const root = window.document.documentElement;
@@ -83,7 +93,7 @@ export function ReaderView({ initialBook }: ReaderViewProps) {
   }, [book.settings.theme]);
 
   useEffect(() => {
-    const timer = setTimeout(paginateContent, 100); // Debounce to allow layout to settle
+    const timer = setTimeout(paginateContent, 100);
     
     const handleResize = () => paginateContent();
     window.addEventListener("resize", handleResize);
@@ -118,7 +128,7 @@ export function ReaderView({ initialBook }: ReaderViewProps) {
       setTimeout(() => {
         setCurrentPage(newPage);
         setIsTransitioning(false);
-      }, duration / 2); // Change page mid-transition
+      }, duration / 2);
     }
   };
 
@@ -128,8 +138,10 @@ export function ReaderView({ initialBook }: ReaderViewProps) {
     ? (book.settings.animation === 'fade' ? 'opacity-0' : 'opacity-50 scale-95')
     : 'opacity-100 scale-100';
 
+  const fontClass = getFontFamilyClass(book.settings.fontFamily);
+
   return (
-    <div className="h-screen w-screen flex flex-col bg-background text-foreground overflow-hidden">
+    <div className={cn("h-screen w-screen flex flex-col bg-background text-foreground overflow-hidden", fontClass)}>
       <header className="flex items-center justify-between p-2 md:p-4 border-b shrink-0 z-20">
         <Button variant="ghost" size="icon" asChild>
           <Link href="/dashboard" aria-label="Back to dashboard">
