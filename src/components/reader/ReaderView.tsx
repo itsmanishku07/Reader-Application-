@@ -33,17 +33,19 @@ export function ReaderView({ initialBook }: ReaderViewProps) {
   }, [currentPage]);
   
   useEffect(() => {
-    calculatePages();
+    // A small delay to ensure fonts are loaded and dimensions are stable
+    const timer = setTimeout(calculatePages, 100);
+    
     const handleResize = () => calculatePages();
     window.addEventListener("resize", handleResize);
     
-    // Recalculate when font size changes
     const observer = new MutationObserver(handleResize);
     if (pageContentRef.current) {
         observer.observe(pageContentRef.current, { attributes: true, attributeFilter: ['style'], subtree: false });
     }
 
     return () => {
+        clearTimeout(timer);
         window.removeEventListener("resize", handleResize);
         observer.disconnect();
     }
@@ -52,11 +54,12 @@ export function ReaderView({ initialBook }: ReaderViewProps) {
   useEffect(() => {
     const root = window.document.documentElement;
     root.classList.remove('light', 'dark', 'sepia', 'indigo');
-    // The 'indigo' theme is the default and doesn't need a class
     if (book.settings.theme !== 'indigo') {
         root.classList.add(book.settings.theme);
     }
-  }, [book.settings.theme]);
+     // Force a re-calculation of pages when theme changes, as it might affect layout
+    calculatePages();
+  }, [book.settings.theme, calculatePages]);
 
   const debouncedUpdateBook = useDebouncedCallback(async (page, settings) => {
     await updateBook(book.id, { currentPage: page, settings });
@@ -114,31 +117,25 @@ export function ReaderView({ initialBook }: ReaderViewProps) {
                     transform: isSlide ? `translateX(-${currentPage * 100}%)` : 'none',
                  }}
             >
-                {Array.from({length: totalPages}).map((_, i) => (
-                    <div
-                        key={i}
-                        className={`flex-shrink-0 w-full h-full p-8 md:p-12 relative ${!isSlide ? `absolute inset-0 ${animationClass}` : ''}`}
+                 <div
+                    className={`flex-shrink-0 w-full h-full p-8 md:p-12 relative ${!isSlide ? `absolute inset-0 ${animationClass}` : ''}`}
+                    style={{
+                        opacity: !isSlide && currentPage > 0 ? 0 : 1,
+                    }}
+                    aria-hidden={currentPage > 0}
+                >
+                     <div 
+                        className="h-full text-justify columns-1 md:columns-2 gap-x-16"
                         style={{
-                            opacity: !isSlide && i === currentPage ? 1 : (isSlide ? 1 : 0),
-                            pointerEvents: i === currentPage ? 'auto' : 'none',
+                            fontSize: `${book.settings.fontSize}px`,
+                            lineHeight: 1.7,
+                            transform: `translateX(-${currentPage * 100}%)`,
                         }}
-                        aria-hidden={i !== currentPage}
-                    >
-                         <div 
-                            className="h-full text-justify"
-                            style={{
-                                fontSize: `${book.settings.fontSize}px`,
-                                lineHeight: 1.7,
-                                columnWidth: contentRef.current?.clientWidth ? `${contentRef.current.clientWidth}px` : '100%',
-                                columnGap: '4rem',
-                                transform: `translateX(-${i * 100}%)`,
-                            }}
-                            ref={i === 0 ? pageContentRef : null} 
-                         >
-                            {book.content}
-                         </div>
-                    </div>
-                ))}
+                        ref={pageContentRef} 
+                     >
+                        {book.content}
+                     </div>
+                </div>
             </div>
         </div>
 

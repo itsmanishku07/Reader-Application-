@@ -64,11 +64,18 @@ export const getBook = async (id: string): Promise<Book | null> => {
 
   if (docSnap.exists()) {
     const data = docSnap.data();
+    // Ensure settings are not undefined
+    const settings = data.settings || {};
     return {
       id: docSnap.id,
       ...data,
       createdAt: (data.createdAt as Timestamp)?.toDate(),
       lastAccessed: (data.lastAccessed as Timestamp)?.toDate(),
+      settings: {
+        fontSize: settings.fontSize || 16,
+        theme: settings.theme || "indigo",
+        animation: settings.animation || "slide",
+      },
     } as Book;
   } else {
     return null;

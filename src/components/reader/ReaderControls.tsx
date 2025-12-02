@@ -76,7 +76,7 @@ export function ReaderControls({
              <div className="grid grid-cols-2 gap-2">
                 <Button variant={settings.theme === 'light' ? 'secondary' : 'outline'} onClick={() => handleThemeChange('light')}><Sun className="mr-2 h-4 w-4" /> Light</Button>
                 <Button variant={settings.theme === 'dark' ? 'secondary' : 'outline'} onClick={() => handleThemeChange('dark')}><Moon className="mr-2 h-4 w-4" /> Dark</Button>
-                <Button variant={settings.theme === 'sepia' ? 'secondary' : 'outline'} onClick={() => handleThemeChange('sepia')}><Book className="mr-2 h-4 w-4" /> Sepia</Button>
+                <Button variant={settings.theme === 'sepia' ? 'secondary' : 'outline'} onClick={() => handleThemeChange('sepia')}><Book className="mr-2 h-4 w-4" /> Sepia</Button>                
                 <Button variant={settings.theme === 'indigo' ? 'secondary' : 'outline'} onClick={() => handleThemeChange('indigo')}><Paintbrush className="mr-2 h-4 w-4" /> Indigo</Button>
              </div>
           </div>
