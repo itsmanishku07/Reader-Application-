@@ -18,6 +18,7 @@ export function ReaderView({ initialBook }: ReaderViewProps) {
   const [book, setBook] = useState(initialBook);
   const [currentPage, setCurrentPage] = useState(initialBook.currentPage);
   const [totalPages, setTotalPages] = useState(1);
+  const [isTransitioning, setIsTransitioning] = useState(false);
   
   const viewportRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
@@ -26,8 +27,7 @@ export function ReaderView({ initialBook }: ReaderViewProps) {
     if (contentRef.current && viewportRef.current) {
         const viewportWidth = viewportRef.current.clientWidth;
         if (viewportWidth > 0) {
-            // Add a small buffer to prevent floating point inaccuracies
-            const numPages = Math.ceil(contentRef.current.scrollWidth / viewportWidth + 0.01);
+            const numPages = Math.ceil(contentRef.current.scrollWidth / viewportWidth);
             setTotalPages(numPages);
             if (currentPage >= numPages) {
                 setCurrentPage(Math.max(0, numPages - 1));
@@ -37,17 +37,14 @@ export function ReaderView({ initialBook }: ReaderViewProps) {
   }, [currentPage]);
   
   useEffect(() => {
-    // A small delay to allow fonts and layout to settle before calculating pages.
-    const timer = setTimeout(calculatePages, 150);
+    const timer = setTimeout(calculatePages, 100);
     
-    // Recalculate pages on window resize.
     const handleResize = () => calculatePages();
     window.addEventListener("resize", handleResize);
     
-    // Use a MutationObserver to recalculate when content changes (like font size).
     const observer = new MutationObserver(handleResize);
     if (contentRef.current) {
-        observer.observe(contentRef.current, { childList: true, subtree: true, characterData: true });
+        observer.observe(contentRef.current, { attributes: true, childList: true, subtree: true });
     }
 
     return () => {
@@ -57,14 +54,12 @@ export function ReaderView({ initialBook }: ReaderViewProps) {
     }
   }, [calculatePages, book.settings.fontSize, book.settings.theme]);
 
-  // Apply the selected theme to the root element.
   useEffect(() => {
     const root = window.document.documentElement;
     root.classList.remove('light', 'dark', 'sepia', 'indigo');
     if (book.settings.theme !== 'indigo') {
         root.classList.add(book.settings.theme);
     }
-     // Recalculate pages after theme change in case it affects layout
     calculatePages();
   }, [book.settings.theme, calculatePages]);
 
@@ -85,14 +80,18 @@ export function ReaderView({ initialBook }: ReaderViewProps) {
 
   const goToPage = (page: number) => {
     const newPage = Math.max(0, Math.min(page, totalPages - 1));
-    setCurrentPage(newPage);
+    if (newPage !== currentPage) {
+      setIsTransitioning(true);
+      setCurrentPage(newPage);
+      const duration = book.settings.animation === 'fade' ? 300 : 500;
+      setTimeout(() => setIsTransitioning(false), duration);
+    }
   };
   
   const animationClass = book.settings.animation === 'fade' 
     ? 'transition-opacity duration-300' 
     : 'transition-transform duration-500 ease-in-out';
-  const isFade = book.settings.animation === 'fade';
-
+  
   return (
     <div className="h-screen w-screen flex flex-col bg-background text-foreground">
       <header className="flex items-center justify-between p-2 md:p-4 border-b shrink-0 z-20">
@@ -113,7 +112,7 @@ export function ReaderView({ initialBook }: ReaderViewProps) {
           size="icon" 
           className="absolute left-2 top-1/2 -translate-y-1/2 z-10 h-12 w-12"
           onClick={() => goToPage(currentPage - 1)}
-          disabled={currentPage === 0}
+          disabled={currentPage === 0 || isTransitioning}
           aria-label="Previous page"
         >
           <ArrowLeft className="h-6 w-6" />
@@ -121,17 +120,16 @@ export function ReaderView({ initialBook }: ReaderViewProps) {
 
         <div className="h-full w-full max-w-5xl overflow-hidden" ref={viewportRef}>
           <div
-            className={cn("h-full w-full", animationClass)}
+            className={cn("h-full", animationClass)}
             style={{
               transform: `translateX(-${currentPage * 100}%)`,
-              opacity: isFade && currentPage === currentPage ? 1 : (isFade ? 0 : 1),
             }}
           >
             <div
               className="h-full"
               style={{
                 columnWidth: viewportRef.current?.clientWidth,
-                columnGap: '6rem', // Creates space between pages
+                columnGap: '6rem',
                 width: `${totalPages * 100}%`,
                 fontSize: `${book.settings.fontSize}px`,
                 lineHeight: 1.7,
@@ -150,7 +148,7 @@ export function ReaderView({ initialBook }: ReaderViewProps) {
           size="icon" 
           className="absolute right-2 top-1/2 -translate-y-1/2 z-10 h-12 w-12"
           onClick={() => goToPage(currentPage + 1)}
-          disabled={currentPage >= totalPages - 1}
+          disabled={currentPage >= totalPages - 1 || isTransitioning}
           aria-label="Next page"
         >
           <ArrowRight className="h-6 w-6" />
