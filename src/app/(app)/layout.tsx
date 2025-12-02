@@ -17,7 +17,6 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   }, [user, loading, router]);
 
   if (loading || !user) {
-    // AuthProvider already shows a loader, this is a fallback.
     return <div className="flex h-screen w-full items-center justify-center"><p>Loading...</p></div>;
   }
 
