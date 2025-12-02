@@ -48,7 +48,7 @@ export default function Dashboard() {
                 <CardHeader>
                   <CardTitle className="font-headline truncate">{book.title}</CardTitle>
                   <CardDescription>
-                    Last read: {formatDistanceToNow(book.lastAccessed, { addSuffix: true })}
+                    Last read: {formatDistanceToNow(new Date(book.lastAccessed), { addSuffix: true })}
                   </CardDescription>
                 </CardHeader>
                 <CardContent>

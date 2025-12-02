@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/layout/AppSidebar";
+import { LoaderCircle } from "lucide-react";
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
@@ -16,9 +17,18 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     }
   }, [user, loading, router]);
 
-  if (loading || !user) {
-    return <div className="flex h-screen w-full items-center justify-center"><p>Loading...</p></div>;
+  if (loading) {
+    return (
+        <div className="flex h-screen w-full items-center justify-center">
+            <LoaderCircle className="h-8 w-8 animate-spin text-primary" />
+        </div>
+    );
   }
+  
+  if (!user) {
+    return null; // Don't render anything while redirecting
+  }
+
 
   return (
     <SidebarProvider>
