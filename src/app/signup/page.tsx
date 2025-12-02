@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useEffect } from "react";
+import { useActionState, useEffect, useState } from "react";
 import { useFormStatus } from "react-dom";
 import { signUpAction } from "@/app/(app)/actions";
 import { Button } from "@/components/ui/button";
@@ -28,6 +28,7 @@ export default function SignUpPage() {
   const { user, loading } = useAuth();
   const initialState = { message: null, errors: {} };
   const [state, dispatch] = useActionState(signUpAction, initialState);
+  const [isFormSubmitted, setIsFormSubmitted] = useState(false);
 
   useEffect(() => {
     if (!loading && user) {
@@ -35,6 +36,17 @@ export default function SignUpPage() {
     }
   }, [user, loading, router]);
   
+  useEffect(() => {
+    if (isFormSubmitted && state.message === null && !state.errors) {
+       setIsFormSubmitted(false);
+    }
+  }, [state, isFormSubmitted]);
+  
+  const handleFormAction = (formData: FormData) => {
+    setIsFormSubmitted(true);
+    dispatch(formData);
+  }
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -57,7 +69,7 @@ export default function SignUpPage() {
           <CardDescription>Enter your details to get started.</CardDescription>
         </CardHeader>
         <CardContent>
-          <form action={dispatch} className="space-y-4">
+          <form action={handleFormAction} className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
               <Input 

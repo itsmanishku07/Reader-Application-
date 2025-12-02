@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { signInWithGoogle } from "@/lib/firebase/auth";
 import { useAuth } from "@/hooks/use-auth";
-import { useEffect, useActionState } from "react";
+import { useEffect, useActionState, useState } from "react";
 import { Logo } from "@/components/icons";
 import { useFormStatus } from "react-dom";
 import { signInAction } from "@/app/(app)/actions";
@@ -39,15 +39,11 @@ export default function LoginPage() {
   const { user, loading } = useAuth();
   const initialState = { message: null, errors: {} };
   const [state, dispatch] = useActionState(signInAction, initialState);
+  const [isFormSubmitted, setIsFormSubmitted] = useState(false);
 
   const handleSignInWithGoogle = async () => {
-    const { user, error } = await signInWithGoogle();
-    if (user) {
-      router.push("/dashboard");
-    } else if (error) {
-      // You can handle Google sign-in errors here if needed
-      console.error(error);
-    }
+    await signInWithGoogle();
+    // The useEffect will handle the redirect
   };
 
   useEffect(() => {
@@ -55,6 +51,22 @@ export default function LoginPage() {
       router.push("/dashboard");
     }
   }, [user, loading, router]);
+  
+  // This effect will run when the form action completes
+  useEffect(() => {
+    if (isFormSubmitted && state.message === null && !state.errors) {
+       // The user state will be updated by onAuthStateChanged
+       // and the main useEffect will handle the redirect.
+       // We don't need to do anything here, but we reset the flag.
+       setIsFormSubmitted(false);
+    }
+  }, [state, isFormSubmitted]);
+
+
+  const handleFormAction = (formData: FormData) => {
+    setIsFormSubmitted(true);
+    dispatch(formData);
+  }
   
   if(loading) {
       return (
@@ -79,7 +91,7 @@ export default function LoginPage() {
           <CardDescription>Sign in to access your personal library.</CardDescription>
         </CardHeader>
         <CardContent>
-            <form action={dispatch} className="space-y-4">
+            <form action={handleFormAction} className="space-y-4">
                 <div className="space-y-2">
                     <Label htmlFor="email">Email</Label>
                     <Input id="email" name="email" type="email" placeholder="m@example.com" required />

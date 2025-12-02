@@ -15,7 +15,7 @@ export const signInWithGoogle = async (): Promise<{ user: User | null; error: an
     const result = await signInWithPopup(auth, provider);
     return { user: result.user, error: null };
   } catch (error) {
-    console.error("Error signing in with Google: ", error);
+    // Don't log to console, let the caller handle it.
     return { user: null, error };
   }
 };
@@ -29,7 +29,7 @@ export const signUpWithEmailPassword = async (email: string, password: string): 
     }
 };
 
-export const signInWithEmailPassword = async (email: string, password: string): Promise<{ user: any; error: any }> => {
+export const signInWithEmailPassword = async (email: string, password:string): Promise<{ user: any; error: any }> => {
     try {
         const result = await signInWithEmailAndPassword(auth, email, password);
         return { user: result.user, error: null };

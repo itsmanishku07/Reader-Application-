@@ -62,8 +62,8 @@ export async function signUpAction(prevState: any, formData: FormData) {
     if (error) {
        return { message: getAuthErrorMessage(error as AuthError) };
     }
-
-    redirect("/dashboard");
+    // Client will handle redirect
+    return { message: null, errors: {} };
 }
 
 
@@ -84,8 +84,8 @@ export async function signInAction(prevState: any, formData: FormData) {
     if (error) {
        return { message: getAuthErrorMessage(error as AuthError) };
     }
-
-    redirect("/dashboard");
+    // Client will handle redirect
+    return { message: null, errors: {} };
 }
 
 
