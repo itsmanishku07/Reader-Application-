@@ -14,6 +14,28 @@ type ReaderViewProps = {
   initialBook: Book;
 };
 
+const PageContent = ({ content, fontFamily }: { content: string, fontFamily: Book['settings']['fontFamily'] }) => {
+    const isCodeBlock = content.startsWith("```") && content.endsWith("```");
+
+    if (isCodeBlock) {
+        const code = content.substring(3, content.length - 3).trim();
+        return (
+            <pre className="p-4 bg-muted/50 rounded-md overflow-x-auto font-code text-sm whitespace-pre-wrap">
+                <code>{code}</code>
+            </pre>
+        );
+    }
+    
+    // Check if this is the first line to be bolded as a title
+    if (content.startsWith('<strong>') && content.endsWith('</strong>')) {
+      const title = content.substring('<strong>'.length, content.length - '</strong>'.length);
+      return <h2 className="text-2xl font-bold font-headline mb-4">{title}</h2>;
+    }
+
+    return <p>{content}</p>;
+};
+
+
 export function ReaderView({ initialBook }: ReaderViewProps) {
   const [book, setBook] = useState(initialBook);
   const [pages, setPages] = useState<string[]>([""]);
@@ -54,23 +76,49 @@ export function ReaderView({ initialBook }: ReaderViewProps) {
     estimator.style.position = 'absolute';
     document.body.appendChild(estimator);
     
-    const words = book.content.split(/\s+/);
+    const lines = book.content.split('\n');
+    let processedContent = lines[0] ? `<strong>${lines[0]}</strong>` : '';
+    if (lines.length > 1) {
+      processedContent += '\n' + lines.slice(1).join('\n');
+    }
+
+    const segments = processedContent.split(/(```[\s\S]*?```)/g).filter(Boolean);
     const newPages: string[] = [];
+
     let currentPageContent = "";
 
-    for (const word of words) {
-        const testContent = currentPageContent + (currentPageContent ? " " : "") + word;
-        estimator.textContent = testContent;
-        
-        if (estimator.offsetHeight > height) {
-            newPages.push(currentPageContent);
-            currentPageContent = word;
-        } else {
-            currentPageContent = testContent;
+    for (const segment of segments) {
+        if (segment.startsWith("```") && segment.endsWith("```")) {
+            if (currentPageContent.trim()) {
+                newPages.push(currentPageContent);
+                currentPageContent = "";
+            }
+            newPages.push(segment);
+            continue;
+        }
+
+        const words = segment.split(/\s+/);
+
+        for (const word of words) {
+            if (!word) continue;
+
+            const testContent = currentPageContent + (currentPageContent ? " " : "") + word;
+            estimator.innerHTML = testContent.replace(/\n/g, '<br>');
+
+            if (estimator.offsetHeight > height) {
+                newPages.push(currentPageContent);
+                if (word.startsWith('<strong>')) {
+                   currentPageContent = word;
+                } else {
+                   currentPageContent = word;
+                }
+            } else {
+                currentPageContent = testContent;
+            }
         }
     }
     
-    if (currentPageContent) {
+    if (currentPageContent.trim()) {
         newPages.push(currentPageContent);
     }
     
@@ -181,7 +229,7 @@ export function ReaderView({ initialBook }: ReaderViewProps) {
                 </div>
             ) : (
                  <div className={cn("text-justify transition-all duration-300 ease-in-out", animationClass)}>
-                    {pages[currentPage]}
+                    <PageContent content={pages[currentPage]} fontFamily={book.settings.fontFamily} />
                  </div>
             )}
         </div>

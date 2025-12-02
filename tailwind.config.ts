@@ -13,9 +13,9 @@ export default {
         serif: ['Literata', 'serif'],
         sans: ['Inter', 'sans-serif'],
         mono: ['Roboto Mono', 'monospace'],
-        body: ['Literata', 'serif'],
-        headline: ['Literata', 'serif'],
-        code: ['monospace'],
+        body: ['Inter', 'sans-serif'],
+        headline: ['Inter', 'sans-serif'],
+        code: ['Roboto Mono', 'monospace'],
       },
       colors: {
         background: 'hsl(var(--background))',
