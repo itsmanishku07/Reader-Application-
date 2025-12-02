@@ -1,0 +1,106 @@
+"use client";
+
+import { useFormState, useFormStatus } from "react-dom";
+import { signUpAction } from "@/app/(app)/actions";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Terminal } from "lucide-react";
+import { useAuth } from "@/hooks/use-auth";
+import { useRouter } from "next/navigation";
+import { useEffect } from "react";
+import Link from 'next/link';
+import { Logo } from "@/components/icons";
+
+function SubmitButton() {
+  const { pending } = useFormStatus();
+  return (
+    <Button type="submit" className="w-full" disabled={pending}>
+      {pending ? "Creating account..." : "Create Account"}
+    </Button>
+  );
+}
+
+export default function SignUpPage() {
+  const router = useRouter();
+  const { user, loading } = useAuth();
+  const initialState = { message: null, errors: {} };
+  const [state, dispatch] = useFormState(signUpAction, initialState);
+
+  useEffect(() => {
+    if (!loading && user) {
+      router.push("/dashboard");
+    }
+  }, [user, loading, router]);
+  
+  if(loading || user) {
+      return (
+        <div className="flex items-center justify-center min-h-screen">
+          <p>Loading...</p>
+        </div>
+      )
+  }
+
+  return (
+    <div className="flex items-center justify-center min-h-screen bg-secondary/50">
+      <Card className="w-full max-w-sm shadow-xl">
+         <CardHeader className="text-center">
+            <div className="flex justify-center items-center gap-2 mb-2">
+                <Logo className="w-8 h-8 text-primary" />
+                <h1 className="text-2xl font-bold font-headline">LectorSync</h1>
+            </div>
+          <CardTitle className="text-2xl font-headline">Create an Account</CardTitle>
+          <CardDescription>Enter your details to get started.</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <form action={dispatch} className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="email">Email</Label>
+              <Input 
+                id="email" 
+                name="email"
+                type="email" 
+                placeholder="m@example.com" 
+                required 
+              />
+              {state.errors?.email && (
+                <p className="text-sm text-destructive">{state.errors.email[0]}</p>
+              )}
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="password">Password</Label>
+              <Input 
+                id="password" 
+                name="password"
+                type="password" 
+                required 
+              />
+               {state.errors?.password && (
+                <p className="text-sm text-destructive">{state.errors.password[0]}</p>
+              )}
+            </div>
+
+            {state.message && !state.errors && (
+              <Alert variant="destructive">
+                <Terminal className="h-4 w-4" />
+                <AlertTitle>Error</AlertTitle>
+                <AlertDescription>{state.message}</AlertDescription>
+              </Alert>
+            )}
+
+            <SubmitButton />
+          </form>
+
+          <div className="mt-4 text-center text-sm">
+            Already have an account?{' '}
+            <Link href="/login" className="underline">
+              Sign in
+            </Link>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}

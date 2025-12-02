@@ -7,6 +7,14 @@ import { signInWithGoogle } from "@/lib/firebase/auth";
 import { useAuth } from "@/hooks/use-auth";
 import { useEffect } from "react";
 import { Logo } from "@/components/icons";
+import { useFormState, useFormStatus } from "react-dom";
+import { signInAction } from "@/app/(app)/actions";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Terminal } from "lucide-react";
+import Link from 'next/link';
+import { Separator } from "@/components/ui/separator";
 
 const GoogleIcon = () => (
   <svg className="w-4 h-4 mr-2" viewBox="0 0 48 48">
@@ -17,12 +25,22 @@ const GoogleIcon = () => (
   </svg>
 );
 
+function SubmitButton() {
+    const { pending } = useFormStatus();
+    return (
+      <Button type="submit" className="w-full" disabled={pending}>
+        {pending ? "Signing in..." : "Sign In"}
+      </Button>
+    );
+  }
 
 export default function LoginPage() {
   const router = useRouter();
   const { user, loading } = useAuth();
+  const initialState = { message: null, errors: {} };
+  const [state, dispatch] = useFormState(signInAction, initialState);
 
-  const handleSignIn = async () => {
+  const handleSignInWithGoogle = async () => {
     const user = await signInWithGoogle();
     if (user) {
       router.push("/dashboard");
@@ -55,10 +73,51 @@ export default function LoginPage() {
           <CardDescription>Sign in to access your personal library.</CardDescription>
         </CardHeader>
         <CardContent>
-          <Button onClick={handleSignIn} className="w-full">
+            <form action={dispatch} className="space-y-4">
+                <div className="space-y-2">
+                    <Label htmlFor="email">Email</Label>
+                    <Input id="email" name="email" type="email" placeholder="m@example.com" required />
+                     {state.errors?.email && (
+                        <p className="text-sm text-destructive">{state.errors.email[0]}</p>
+                    )}
+                </div>
+                <div className="space-y-2">
+                    <Label htmlFor="password">Password</Label>
+                    <Input id="password" name="password" type="password" required />
+                     {state.errors?.password && (
+                        <p className="text-sm text-destructive">{state.errors.password[0]}</p>
+                    )}
+                </div>
+
+                {state.message && (
+                    <Alert variant="destructive">
+                        <Terminal className="h-4 w-4" />
+                        <AlertTitle>Error</AlertTitle>
+                        <AlertDescription>{state.message}</AlertDescription>
+                    </Alert>
+                )}
+
+                <SubmitButton />
+            </form>
+
+          <div className="my-4 flex items-center">
+            <Separator className="flex-1" />
+            <span className="px-4 text-xs text-muted-foreground">OR</span>
+            <Separator className="flex-1" />
+          </div>
+
+          <Button onClick={handleSignInWithGoogle} variant="outline" className="w-full">
             <GoogleIcon />
             Sign in with Google
           </Button>
+
+          <div className="mt-4 text-center text-sm">
+            Don't have an account?{' '}
+            <Link href="/signup" className="underline">
+              Sign up
+            </Link>
+          </div>
+
         </CardContent>
       </Card>
     </div>
