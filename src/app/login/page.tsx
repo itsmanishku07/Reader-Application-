@@ -5,9 +5,9 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { signInWithGoogle } from "@/lib/firebase/auth";
 import { useAuth } from "@/hooks/use-auth";
-import { useEffect } from "react";
+import { useEffect, useActionState } from "react";
 import { Logo } from "@/components/icons";
-import { useFormState, useFormStatus } from "react-dom";
+import { useFormStatus } from "react-dom";
 import { signInAction } from "@/app/(app)/actions";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -38,7 +38,7 @@ export default function LoginPage() {
   const router = useRouter();
   const { user, loading } = useAuth();
   const initialState = { message: null, errors: {} };
-  const [state, dispatch] = useFormState(signInAction, initialState);
+  const [state, dispatch] = useActionState(signInAction, initialState);
 
   const handleSignInWithGoogle = async () => {
     const user = await signInWithGoogle();

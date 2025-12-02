@@ -1,6 +1,7 @@
 "use client";
 
-import { useFormState, useFormStatus } from "react-dom";
+import { useActionState, useEffect } from "react";
+import { useFormStatus } from "react-dom";
 import { signUpAction } from "@/app/(app)/actions";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -10,7 +11,6 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Terminal } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { useRouter } from "next/navigation";
-import { useEffect } from "react";
 import Link from 'next/link';
 import { Logo } from "@/components/icons";
 
@@ -27,7 +27,7 @@ export default function SignUpPage() {
   const router = useRouter();
   const { user, loading } = useAuth();
   const initialState = { message: null, errors: {} };
-  const [state, dispatch] = useFormState(signUpAction, initialState);
+  const [state, dispatch] = useActionState(signUpAction, initialState);
 
   useEffect(() => {
     if (!loading && user) {

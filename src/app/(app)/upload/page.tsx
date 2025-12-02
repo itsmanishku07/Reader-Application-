@@ -1,6 +1,6 @@
 "use client";
 
-import { useFormState, useFormStatus } from "react-dom";
+import { useActionState, useFormStatus } from "react-dom";
 import { createBookAction } from "../actions";
 import { Header } from "@/components/layout/Header";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -24,7 +24,7 @@ function SubmitButton() {
 export default function UploadPage() {
   const { user } = useAuth();
   const initialState = { message: null, errors: {} };
-  const [state, dispatch] = useFormState(createBookAction, initialState);
+  const [state, dispatch] = useActionState(createBookAction, initialState);
 
   return (
     <div className="flex min-h-screen w-full flex-col">
